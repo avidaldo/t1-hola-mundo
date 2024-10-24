@@ -1,14 +1,24 @@
-import unittest
-from unittest.mock import patch
+import pytest
 from io import StringIO
-import main
+import sys
+import os
 
-class TestHelloWorld(unittest.TestCase):
-    @patch('builtins.input', return_value='John')
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_hello_name(self, mock_stdout, mock_input):
-        main.hello_name()
-        self.assertEqual(mock_stdout.getvalue().strip(), 'Hello, John!')
+# Ensure the parent directory (containing main.py) is in the Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-if __name__ == '__main__':
-    unittest.main()
+import main  # Import the main module
+
+
+# Test function using pytest's monkeypatch for mocking input
+def test_hello_name(monkeypatch, capsys):
+    # Mock input to return 'John'
+    monkeypatch.setattr('builtins.input', lambda _: 'John')
+
+    # Call the function
+    main.hello_name()
+
+    # Capture the output
+    captured = capsys.readouterr()
+
+    # Check the expected output
+    assert captured.out.strip() == 'Hello, John!'
